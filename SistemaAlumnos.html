@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Listas de Asistencias y Tareas</title>
+    <link rel="icon" href="IconSisAlu.png" type="image/png" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: #f5f7fa;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 5px;
+    }
+    h2 {
+      color: #34495e;
+      margin: 30px 0 15px 0;
+      border-bottom: 3px solid #27ae60;
+      width: 100%;
+      max-width: 1000px;
+      padding-bottom: 5px;
+    }
+    .container {
+      background: white;
+      border-radius: 12px;
+      padding: 30px 35px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 1000px;
+      box-sizing: border-box;
+    }
+    /* Numero de estudiantes Form */
+    #setup-form {
+      background: white;
+      border-radius: 12px;
+      padding: 30px 35px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      max-width: 400px;
+      width: 95%;
+      box-sizing: border-box;
+      text-align: center;
+    }
+    #setup-form input[type=number] {
+      width: 100%;
+      padding: 12px 15px;
+      font-size: 1.2rem;
+      border-radius: 8px;
+      border: 1.8px solid #aaa;
+      margin: 15px 0 25px 0;
+      transition: border-color 0.3s;
+      box-sizing: border-box;
+    }
+    #setup-form input[type=number]:focus {
+      outline: none;
+      border-color: #2980b9;
+    }
+    #setup-form button {
+      background-color: #2980b9;
+      border: none;
+      color: white;
+      font-weight: 700;
+      font-size: 1.1rem;
+      padding: 13px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      width: 100%;
+      transition: background-color 0.3s;
+    }
+    #setup-form button:hover {
+      background-color: #1c5980;
+    }
+    /* Attendance Table */
+    table.attendance {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      word-wrap: break-word;
+    }
+    table.attendance thead tr {
+      background: #27ae60;
+      color: #fff;
+      text-align: center;
+      user-select: none;
+    }
+    table.attendance th, table.attendance td {
+      border: 1px solid #ddd;
+      padding: 8px 6px;
+      font-size: 0.9rem;
+      vertical-align: middle;
+    }
+    table.attendance th.student-name,
+    table.attendance td.student-name {
+      width: 140px;
+      text-align: left;
+    }
+    table.attendance th.day,
+    table.attendance td.day {
+      width: 110px;
+      white-space: nowrap;
+    }
+    table.attendance td.late-input-cell {
+      padding: 4px 6px;
+    }
+    .present-checkbox {
+      cursor: pointer;
+      width: 20px;
+      height: 20px;
+      margin: 0 auto;
+      display: block;
+    }
+    .late-message-input {
+      width: 100%;
+      font-size: 0.85rem;
+      padding: 4px 6px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      transition: border-color 0.3s;
+    }
+    .late-message-input:disabled {
+      background-color: #f0f0f0;
+      color: #888;
+      cursor: not-allowed;
+    }
+    .late-message-input:focus {
+      border-color: #2980b9;
+      outline: none;
+      background-color: #fff;
+    }
+    .student-name-input {
+      width: 130px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border: 1.8px solid transparent;
+      border-radius: 6px;
+      padding: 6px 8px;
+      transition: border-color 0.3s, background-color 0.3s;
+      box-sizing: border-box;
+      color: #2c3e50;
+      background-color: #fcfcfc;
+    }
+    .student-name-input:focus {
+      outline: none;
+      border-color: #2980b9;
+      background-color: #fff;
+    }
+
+    /* Assignments section */
+    .assignments-section {
+      margin-top: 40px;
+      width: 100%;
+    }
+    .assignments-header {
+      display: flex;
+      justify-content: space-between;
+      max-width: 1000px;
+      margin-bottom: 15px;
+    }
+    .assignment-input {
+      flex-grow: 1;
+      padding: 9px 14px;
+      font-size: 1rem;
+      border: 1.8px solid #bbb;
+      border-radius: 8px;
+      transition: border-color 0.3s;
+      box-sizing: border-box;
+      margin-right: 12px;
+    }
+    .assignment-input:focus {
+      border-color: #2980b9;
+      outline: none;
+    }
+    .add-assignment-btn {
+      background-color: #2980b9;
+      border: none;
+      color: white;
+      font-weight: 700;
+      padding: 11px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      user-select: none;
+    }
+    .add-assignment-btn:hover {
+      background-color: #1c5980;
+    }
+    /* tabla asignaturas */
+    table.assignments {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      word-wrap: break-word;
+      max-width: 1000px;
+    }
+    table.assignments thead tr {
+      background: #27ae60;
+      color: #fff;
+      user-select: none;
+      text-align: center;
+    }
+    table.assignments th, table.assignments td {
+      border: 1px solid #ccc;
+      padding: 8px 6px;
+      font-size: 0.9rem;
+      vertical-align: middle;
+    }
+    table.assignments th.student-name,
+    table.assignments td.student-name {
+      width: 160px;
+      font-weight: 700;
+      text-align: left;
+      padding-left: 12px;
+      white-space: nowrap;
+    }
+    table.assignments td.assignment-checkbox-cell {
+      text-align: center;
+    }
+    .turned-in-checkbox {
+      cursor: pointer;
+      width: 22px;
+      height: 22px;
+    }
+
+    /* Buttons for download */
+    .download-buttons {
+      margin-top: 30px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 15px;
+      max-width: 1000px;
+      user-select: none;
+    }
+    .download-btn {
+      background-color: #43ffc9;
+      color: black;
+      border: none;
+      font-weight: 700;
+        font-family: cursive;
+      padding: 11px 22px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .download-btn:hover {
+      background-color: #00b388;
+    }
+
+    /* Responsive */
+    @media (max-width: 850px) {
+      table.attendance, table.assignments {
+        font-size: 0.8rem;
+      }
+      .student-name-input {
+        width: 100px;
+      }
+      .assignments-header {
+        flex-direction: column;
+      }
+      .assignment-input {
+        margin: 0 0 12px 0;
+        width: 100%;
+      }
+      .download-buttons {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<h1>Lista de Alumnos y Trabajos</h1>
+
+<!-- Setup form for number of students -->
+<div id="setup-form">
+  <label for="studentCountInput" style="font-size:1.2rem; font-weight:600;">
+    Ingresa la cantidad de alumnos
+      para las listas:
+  </label>
+  <input type="number" id="studentCountInput" min="1" max="100" value="10" aria-label="Number of students" />
+  <button id="setupButton">Crear Listas</button>
+</div>
+
+<div class="container" id="main-app" style="display:none;">
+  <!-- Attendance Section -->
+  <section class="attendance-section" aria-label="Attendance Section">
+    <h2>Asistencias</h2>
+    <table class="attendance" aria-describedby="attendance-desc" role="grid">
+      <caption id="attendance-desc">Asistencia y mensaje de tardanza</caption>
+      <thead>
+        <tr>
+          <th class="student-name" scope="col">Nombre</th>
+          <th scope="col" class="day">Lunes<br></th>
+          <th scope="col" class="day">Lunes<br>Retardo</th>
+          <th scope="col" class="day">Martes<br></th>
+          <th scope="col" class="day">Martes<br>Retardo</th>
+          <th scope="col" class="day">Miércoles<br></th>
+          <th scope="col" class="day">Miércoles<br>Retardo</th>
+          <th scope="col" class="day">Jueves<br></th>
+          <th scope="col" class="day">Jueves<br>Retardo</th>
+          <th scope="col" class="day">Viernes<br></th>
+          <th scope="col" class="day">Viernes<br>Retardo</th>
+        </tr>
+      </thead>
+      <tbody id="attendance-tbody">
+        <!-- Students rows dynamically generated here -->
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Assignments Section -->
+  <section class="assignments-section" aria-label="Assignments Section">
+    <h2>Materia</h2>
+    <div class="assignments-header">
+      <input type="text" id="assignmentNameInput" class="assignment-input" placeholder="Agrega la materia" aria-label="New assignment name" />
+      <button id="addAssignmentBtn" class="add-assignment-btn" aria-label="Add assignment">Agregar</button>
+    </div>
+    <table class="assignments" aria-describedby="assignments-desc" role="grid">
+      <caption id="assignments-desc">Muestra si entregó los trabajos </caption>
+      <thead id="assignments-thead">
+        <tr>
+          <th class="student-name" scope="col">Nombre del estudiante</th>
+          <!-- Assignment columns dynamically generated here -->
+        </tr>
+      </thead>
+      <tbody id="assignments-tbody">
+        <!-- Student rows dynamically generated here -->
+      </tbody>
+    </table>
+  </section>
+
+  <div class="download-buttons">
+    <button id="downloadAttendance" class="download-btn" aria-label="Download attendance list as CSV">Descargar hoja de Asistencias</button>
+    <button id="downloadWork" class="download-btn" aria-label="Download work list as CSV">Descargar hoja de Trabajos</button>
+  </div>
+</div>
+
+<script>
+  (function(){
+    // dias y semanas
+    const DAYS = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes'];
+
+    // Store students and assignments data
+    let students = [];
+    let assignments = [];
+
+    // Cached DOM elements
+    const setupForm = document.getElementById('setup-form');
+    const studentCountInput = document.getElementById('studentCountInput');
+    const setupButton = document.getElementById('setupButton');
+    const mainApp = document.getElementById('main-app');
+    const attendanceTbody = document.getElementById('attendance-tbody');
+    const assignmentsThead = document.getElementById('assignments-thead');
+    const assignmentsTbody = document.getElementById('assignments-tbody');
+    const assignmentNameInput = document.getElementById('assignmentNameInput');
+    const addAssignmentBtn = document.getElementById('addAssignmentBtn');
+    const downloadAttendanceBtn = document.getElementById('downloadAttendance');
+    const downloadWorkBtn = document.getElementById('downloadWork');
+
+    // Utility to create elements with classes & attributes
+    function createElement(tag, options = {}) {
+      const el = document.createElement(tag);
+      if(options.classes) el.className = options.classes;
+      if(options.attrs){
+        for(const [k,v] of Object.entries(options.attrs)) {
+          el.setAttribute(k,v);
+        }
+      }
+      if(options.text) el.textContent = options.text;
+      return el;
+    }
+
+    // Setup the app once number of students is set
+    setupButton.addEventListener('click', () => {
+      const count = parseInt(studentCountInput.value, 10);
+      if(isNaN(count) || count < 1 || count > 100){
+        alert('Por favor ingresa un numero valido de estudiantes entre 1 y 100');
+        return;
+      }
+      // Initialize students array with default names
+      students = [];
+      for(let i = 1; i <= count; i++){
+        students.push({
+          name: 'Student ' + i,
+          attendance: DAYS.reduce((acc, day) => {
+            acc[day] = {present: false, lateMessage: ''};
+            return acc;
+          }, {}),
+          assignmentsStatus: {} // {assignmentName: boolean}
+        });
+      }
+      // Hide setup form show main app
+      setupForm.style.display = 'none';
+      mainApp.style.display = 'block';
+
+      generateAttendanceTable();
+      generateAssignmentTable();
+    });
+
+    // Generate attendance table body rows for each student
+    function generateAttendanceTable(){
+      attendanceTbody.innerHTML = '';
+      students.forEach((student, studentIndex) => {
+        const tr = createElement('tr');
+        // Student name input cell
+        const nameCell = createElement('td', {classes: 'student-name'});
+        const nameInput = createElement('input', {attrs: {type: 'text', value: student.name, 'aria-label': 'Edit name for ' + student.name}});
+        nameInput.className = 'student-name-input';
+        nameInput.addEventListener('input', e => {
+          student.name = e.target.value.trim() || ('Student ' + (studentIndex + 1));
+          // Also update assignments table
+          updateAssignmentsStudentName(studentIndex, student.name);
+        });
+        nameCell.appendChild(nameInput);
+        tr.appendChild(nameCell);
+
+        // For each day, present checkbox + late message input
+        DAYS.forEach(day => {
+          // Present checkbox cell
+          const presentCell = createElement('td', {attrs: {'aria-label': day + ' presence for ' + student.name}});
+          presentCell.style.textAlign = 'center';
+          const presentCheckbox = createElement('input', {attrs: {type: 'checkbox', role:'checkbox', 'aria-checked': 'false'}});
+          presentCheckbox.className = 'present-checkbox';
+          presentCheckbox.checked = student.attendance[day].present;
+          presentCheckbox.addEventListener('change', e => {
+            student.attendance[day].present = e.target.checked;
+            lateInput.disabled = !e.target.checked;
+            if(!e.target.checked){
+              lateInput.value = '';
+              student.attendance[day].lateMessage = '';
+            }
+          });
+          presentCell.appendChild(presentCheckbox);
+          tr.appendChild(presentCell);
+
+          // Late message cell
+          const lateCell = createElement('td', {classes: 'late-input-cell'});
+          const lateInput = createElement('input', {
+            attrs: {
+              type: 'text',
+              class: 'late-message-input',
+              placeholder: 'ej. 5 min tarde',
+              'aria-label': day + ' late message for ' + student.name,
+              disabled: !student.attendance[day].present
+            }
+          });
+          lateInput.value = student.attendance[day].lateMessage;
+          lateInput.addEventListener('input', e => {
+            student.attendance[day].lateMessage = e.target.value;
+          });
+          lateCell.appendChild(lateInput);
+          tr.appendChild(lateCell);
+        });
+        attendanceTbody.appendChild(tr);
+      });
+    }
+
+    // Generate assignments table header and body
+    function generateAssignmentTable(){
+      // Clear table head except first column (Student Name)
+      // Remove old assignment headers except first col
+      while(assignmentsThead.rows[0].cells.length > 1){
+        assignmentsThead.rows[0].deleteCell(1);
+      }
+      // Add assignment columns headers
+      assignments.forEach(name => {
+        const th = createElement('th', {attrs:{scope:'col'}, text: name});
+        assignmentsThead.rows[0].appendChild(th);
+      });
+
+      // Clear tbody
+      assignmentsTbody.innerHTML = '';
+      // For each student add row with assignment checkboxes
+      students.forEach((student, studentIndex) => {
+        const tr = createElement('tr');
+        // Student name cell
+        const nameCell = createElement('td', {classes: 'student-name'});
+        const nameInput = createElement('input', {attrs: {type: 'text', value: student.name, 'aria-label': 'Edit name for ' + student.name}});
+        nameInput.className = 'student-name-input';
+        nameInput.addEventListener('input', e => {
+          student.name = e.target.value.trim() || ('Student ' + (studentIndex + 1));
+          // Also update attendance table
+          updateAttendanceStudentName(studentIndex, student.name);
+        });
+        nameCell.appendChild(nameInput);
+        tr.appendChild(nameCell);
+
+        // Add assignment columns with checkbox
+        assignments.forEach(assignName => {
+          const td = createElement('td', {classes:'assignment-checkbox-cell', attrs: {'aria-label': 'Turned in status for assignment ' + assignName + ' by ' + student.name}});
+          td.style.textAlign = 'center';
+          const cb = createElement('input', {attrs: {type: 'checkbox', role: 'checkbox'}});
+          cb.className = 'turned-in-checkbox';
+
+          // Initialize assignment status if undefined
+          if(typeof student.assignmentsStatus[assignName] !== 'boolean'){
+            student.assignmentsStatus[assignName] = false;
+          }
+          cb.checked = student.assignmentsStatus[assignName];
+
+          cb.addEventListener('change', e => {
+            student.assignmentsStatus[assignName] = e.target.checked;
+          });
+          td.appendChild(cb);
+          tr.appendChild(td);
+        });
+        assignmentsTbody.appendChild(tr);
+      });
+    }
+
+    // Button to add assignment
+    addAssignmentBtn.addEventListener('click', () => {
+      const newName = assignmentNameInput.value.trim();
+      if(!newName) return;
+      if(assignments.map(n => n.toLowerCase()).includes(newName.toLowerCase())){
+        alert('Assignment "' + newName + '" already exists.');
+        return;
+      }
+      assignments.push(newName);
+      // Add new assignment column header
+      const th = createElement('th', {attrs:{scope:'col'}, text: newName});
+      assignmentsThead.rows[0].appendChild(th);
+      // Add new checkbox cell to each student row in tbody
+      Array.from(assignmentsTbody.rows).forEach((tr, index) => {
+        const td = createElement('td', {classes:'assignment-checkbox-cell', attrs:{'aria-label': 'Turned in status for assignment ' + newName + ' by ' + students[index].name}});
+        td.style.textAlign = 'center';
+        const cb = createElement('input', {attrs: {type: 'checkbox', role:'checkbox'}});
+        cb.className = 'turned-in-checkbox';
+        cb.checked = false;
+        cb.addEventListener('change', e => {
+          students[index].assignmentsStatus[newName] = e.target.checked;
+        });
+        td.appendChild(cb);
+        tr.appendChild(td);
+        // Initialize assignment status for student
+        students[index].assignmentsStatus[newName] = false;
+      });
+      assignmentNameInput.value = '';
+      assignmentNameInput.focus();
+    });
+    assignmentNameInput.addEventListener('keydown', e => {
+      if(e.key === 'Enter'){
+        e.preventDefault();
+        addAssignmentBtn.click();
+      }
+    });
+
+    // Update student name in assignments table
+    function updateAssignmentsStudentName(studentIndex, newName){
+      const tr = assignmentsTbody.rows[studentIndex];
+      if(tr){
+        const input = tr.querySelector('input.student-name-input');
+        if(input) input.value = newName;
+        // Update aria-label for assignment checkboxes in this row
+        Array.from(tr.cells).slice(1).forEach((td, colIndex) => {
+          const assignName = assignments[colIndex];
+          if(assignName){
+            td.setAttribute('aria-label', 'Turned in status for assignment ' + assignName + ' by ' + newName);
+            const cb = td.querySelector('input[type=checkbox]');
+            if(cb){
+              cb.setAttribute('aria-label', 'Mark assignment "' + assignName + '" as turned in for ' + newName);
+            }
+          }
+        });
+      }
+    }
+    // Update student name in attendance table
+    function updateAttendanceStudentName(studentIndex, newName){
+      const tr = attendanceTbody.rows[studentIndex];
+      if(tr){
+        const input = tr.querySelector('input.student-name-input');
+        if(input) input.value = newName;
+        // Update aria-label for each present checkbox and late input
+        DAYS.forEach((day, dayIndex) => {
+          const presentCell = tr.cells[1 + dayIndex * 2];
+          const lateCell = tr.cells[2 + dayIndex * 2];
+          if(presentCell){
+            const cb = presentCell.querySelector('input[type=checkbox]');
+            if(cb){
+              cb.setAttribute('aria-label', day + ' presence for ' + newName);
+            }
+          }
+          if(lateCell){
+            const inputLate = lateCell.querySelector('input[type=text]');
+            if(inputLate){
+              inputLate.setAttribute('aria-label', day + ' late message for ' + newName);
+            }
+          }
+        });
+      }
+    }
+
+    // Generate CSV and trigger download utility
+    function downloadCSV(filename, rows) {
+      const csvContent = rows.map(e => e.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n');
+      const blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.target = '_blank';
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // Prepare and download attendance sheet CSV
+    downloadAttendanceBtn.addEventListener('click', () => {
+      if(students.length === 0){
+        alert('Sin datos de alumnos para descargar');
+        return;
+      }
+      // Header row
+      const header = ['Student Name'];
+      DAYS.forEach(day => {
+        header.push(day + ' Present');
+        header.push(day + ' Late Message');
+      });
+      const rows = [header];
+      // data rows
+      students.forEach(student => {
+        const row = [student.name];
+        DAYS.forEach(day => {
+          row.push(student.attendance[day].present ? 'Present' : 'Absent');
+          row.push(student.attendance[day].lateMessage || '');
+        });
+        rows.push(row);
+      });
+      downloadCSV('Asistencia.csv', rows);
+    });
+
+    // Prepare and download work sheet CSV
+    downloadWorkBtn.addEventListener('click', () => {
+      if(students.length === 0){
+        alert('Sin datos de alumnos para descargar');
+        return;
+      }
+      if(assignments.length === 0){
+        alert('Sin datos de materia para descargar');
+        return;
+      }
+      // Header row
+      const header = ['Student Name', ...assignments];
+      const rows = [header];
+      // data rows
+      students.forEach(student => {
+        const row = [student.name];
+        assignments.forEach(assignName => {
+          row.push(student.assignmentsStatus[assignName] ? 'Turned In' : 'Not Turned In');
+        });
+        rows.push(row);
+      });
+      downloadCSV('Trabajos.csv', rows);
+    });
+
+  })();
+</script>
+
+</body>
+</html>
+

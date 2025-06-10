@@ -396,6 +396,16 @@
     const btnGuardarDatos = document.getElementById("btnGuardarDatos");
     const btnDescargarAsistencias = document.getElementById("btnDescargarAsistencias");
     const btnDescargarTareas = document.getElementById("btnDescargarTareas");
+    const toast = document.getElementById("toast");
+
+    // Toast mostrar
+    function mostrarToast(mensaje) {
+      toast.textContent = mensaje;
+      toast.classList.add("show");
+      setTimeout(() => {
+        toast.classList.remove("show");
+      }, 3000);
+    }
 
     // Generar ID estudiante
     function generarIdEstudiante(index) {
@@ -597,6 +607,42 @@
       });
     });
 
+// Guardar datos en localStorage
+    function guardarDatosLocal() {
+      try {
+        localStorage.setItem("gestorDatos", JSON.stringify(estado));
+        mostrarToast("Datos guardados correctamente");
+      } catch (e) {
+        alert("Error al guardar datos: " + e.message);
+      }
+    }
+
+    // Cargar datos de localStorage
+    function cargarDatosLocal() {
+      try {
+        const datos = localStorage.getItem("gestorDatos");
+        if (!datos) return false;
+        estado = JSON.parse(datos);
+        if (
+          !estado.numEstudiantes ||
+          !estado.estudiantes ||
+          !estado.asistencia ||
+          !estado.materiasPorDia ||
+          !estado.tareas
+        ) return false;
+        numEstudiantesInput.value = estado.numEstudiantes;
+        renderTablaAsistencia();
+        renderMaterias();
+        renderTablaTareas();
+        asistenciaSection.style.display = "block";
+        tareasSection.style.display = "block";
+        botonesGuardarDescargar.style.display = "flex";
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
     // Exportar asistencias a Excel
     function exportarAsistenciasExcel() {
       const wb = XLSX.utils.book_new();
@@ -647,7 +693,7 @@
       XLSX.writeFile(wb, "Tareas.xlsx");
     }
 
-    // Eventos
+   // Eventos
     btnCrearTablas.addEventListener("click", () => {
       const num = parseInt(numEstudiantesInput.value);
       if (isNaN(num) || num < 1 || num > 100) {
@@ -658,7 +704,7 @@
     });
 
     btnGuardarDatos.addEventListener("click", () => {
-      alert("Funcionalidad de guardar datos no implementada en este diseño estático.");
+      guardarDatosLocal();
     });
 
     btnDescargarAsistencias.addEventListener("click", () => {
@@ -675,6 +721,11 @@
         return;
       }
       exportarTareasExcel();
+    });
+
+    // Al cargar la página, intentar cargar datos guardados
+    window.addEventListener("load", () => {
+      cargarDatosLocal();
     });
   </script>
 </body>
